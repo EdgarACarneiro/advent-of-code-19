@@ -15,22 +15,14 @@ void split(const string &str, vector<int> &v, char delim = ',')
     }
 }
 
-int findValue(int a, int b)
+int findValue(vector<int> intcodes, int a, int b)
 {
-    ifstream infile("input/day2.txt");
-    vector<int> intcodes;
-
-    // Parsing values to list
-    string list;
-    infile >> list;
-    split(list, intcodes);
-
     // Replacing positions
     intcodes[1] = a;
     intcodes[2] = b;
 
     // Processing Intcodes
-    for (int i = 0; i < intcodes.size(); ++i)
+    for (int i = 0; i < intcodes.size(); i+=4)
     {
         switch (intcodes[i])
         {
@@ -38,13 +30,11 @@ int findValue(int a, int b)
             intcodes[intcodes[i + 3]] =
                 intcodes[intcodes[i + 1]] +
                 intcodes[intcodes[i + 2]];
-            i += 3;
             break;
         case 2:
             intcodes[intcodes[i + 3]] =
                 intcodes[intcodes[i + 1]] *
                 intcodes[intcodes[i + 2]];
-            i += 3;
             break;
         case 99:
             // Forcing stop
@@ -65,12 +55,20 @@ int score(int a, int b)
 
 int main()
 {
+    ifstream infile("input/day2.txt");
+    vector<int> intcodes;
+
+    // Parsing values to list
+    string list;
+    infile >> list;
+    split(list, intcodes);
+
     // Brute force approach
     for (int i = 0; i < 99; ++i)
     {
         for (int j = 0; j < 99; ++j)
         {
-            if (findValue(i, j) == 19690720)
+            if (findValue(intcodes, i, j) == 19690720)
             {
                 cout << score(i, j) << '\n';
                 return 0;

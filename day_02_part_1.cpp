@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     intcodes[2] = 2;
 
     // Processing Intcodes
-    for (int i = 0; i < intcodes.size(); ++i)
+    for (int i = 0; i < intcodes.size(); i+=4)
     {
         switch (intcodes[i])
         {
@@ -38,13 +38,11 @@ int main(int argc, char *argv[])
             intcodes[intcodes[i + 3]] =
                 intcodes[intcodes[i + 1]] +
                 intcodes[intcodes[i + 2]];
-            i += 3;
             break;
         case 2:
             intcodes[intcodes[i + 3]] =
                 intcodes[intcodes[i + 1]] *
                 intcodes[intcodes[i + 2]];
-            i += 3;
             break;
         case 99:
             // Forcing stop
@@ -55,9 +53,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    // for (int i = 0; i < intcodes.size(); ++i)
-    //     cout << intcodes[i] << ',';
-    // cout << '\n';
     cout << intcodes[0] << '\n';
 
     return 0;
