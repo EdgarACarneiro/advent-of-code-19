@@ -22,9 +22,9 @@ private:
     int y;
 
 public:
-    Point(int x, int y) : x(x), y(y)
-    {
-    }
+    Point() : x(0), y(0) {}
+
+    Point(int x, int y) : x(x), y(y) {}
 
     int getX()
     {
@@ -42,64 +42,64 @@ public:
     }
 };
 
-// class Line
-// {
-// private:
-//     Point bPoint;
-//     Point ePoint;
-//     bool vertical;
-// public:
-//     Line(string instruction, Point begin): bPoint(begin) {
-//         int change = stoi(instruction.erase(0, 1));
-
-//         switch(instruction[0]) {
-//             case 'U':
-//                 ePoint = Point(bPoint.getX(), bPoint.getY() + change);
-//                 vertical = true;
-//             case 'D':
-//                 ePoint = Point(bPoint.getX(), bPoint.getY() - change);
-//                 vertical = true;
-//             case 'R':
-//                 ePoint = Point(bPoint.getX() + change, bPoint.getY());
-//                 vertical = false;
-//             case 'L':
-//                 ePoint = Point(bPoint.getX() - change, bPoint.getY());
-//                 vertical = false;
-//         }
-//     }
-
-//     Point getEndPoint() {
-//         return ePoint;
-//     }
-
-//     Point* getIntersection(Line l) {
-//         if (true) {
-//             return new Point(0, 0);
-//         }
-//         return NULL;
-//     }
-// };
-
-void addLinePoints(string instruction, vector<Point> &wire, Point lastPoint)
+class Line
 {
-    int change = stoi(instruction.substr(1, instruction.size() - 1));
+public:
+    Point bPoint;
+    Point ePoint;
 
-    switch (instruction.at(0))
+    Line(string instruction, Point begin) : bPoint(begin)
     {
-    case 'U':
-        for (int i = 1; i <= change; ++i)
-            wire.push_back(Point(lastPoint.getX(), lastPoint.getY() + i));
-    case 'D':
-        for (int i = 1; i <= change; ++i)
-            wire.push_back(Point(lastPoint.getX(), lastPoint.getY() - i));
-    case 'R':
-        for (int i = 1; i <= change; ++i)
-            wire.push_back(Point(lastPoint.getX() + i, lastPoint.getY()));
-    case 'L':
-        for (int i = 1; i <= change; ++i)
-            wire.push_back(Point(lastPoint.getX() - i, lastPoint.getY()));
+        int change = stoi(instruction.substr(1, instruction.size() - 1));
+
+        switch (instruction.at(0))
+        {
+        case 'U':
+            ePoint = Point(bPoint.getX(), bPoint.getY() + change);
+            break;
+        case 'D':
+            ePoint = Point(bPoint.getX(), bPoint.getY() - change);
+            break;
+        case 'R':
+            ePoint = Point(bPoint.getX() + change, bPoint.getY());
+            break;
+        case 'L':
+            ePoint = Point(bPoint.getX() - change, bPoint.getY());
+            break;
+        }
     }
-}
+
+    Point *getIntersection(Line l)
+    {
+        float p0_x = bPoint.getX();
+        float p0_y = bPoint.getY();
+        float p1_x = ePoint.getX();
+        float p1_y = ePoint.getY();
+
+        float p2_x = l.bPoint.getX();
+        float p2_y = l.bPoint.getY();
+        float p3_x = l.ePoint.getX();
+        float p3_y = l.ePoint.getY();
+        float s1_x, s1_y, s2_x, s2_y;
+
+        s1_x = p1_x - p0_x;
+        s1_y = p1_y - p0_y;
+        s2_x = p3_x - p2_x;
+        s2_y = p3_y - p2_y;
+
+        float s, t;
+        s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
+        t = (s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
+
+        if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+        {
+            // Collision detected
+            return new Point(p0_x + (t * s1_x), p0_y + (t * s1_y));
+        }
+
+        return NULL; // No collision
+    }
+};
 
 int manhattan_dist(Point a, Point b)
 {
@@ -119,14 +119,13 @@ int main()
         split(list, line_inst);
         instructions.push_back(line_inst);
     }
-
-    // inefficient approach -> storing all the points
-    vector<vector<Point> > wires;
+ 
+    vector<vector<Line> > wires;
     for (int i = 0; i < instructions.size(); ++i)
     {
-        vector<Point> wire;
+        vector<Line> wire;
         for (int j = 0; j < instructions[i].size(); ++j)
-            addLinePoints(instructions[i][j], wire, (j == 0 ? Point(0, 0) : wire[j - 1]));
+            wire.push_back(Line(instructions[i][j], (j == 0 ? Point() : wire[j - 1].ePoint)));
         wires.push_back(wire);
     }
 
@@ -134,9 +133,17 @@ int main()
 
     // Find common points between wires
     for (int i = 0; i < wires[0].size(); ++i)
-        for (int j = i + 1; j < wires[1].size(); ++j)
-            if (wires[0][i] == wires[1][j] && manhattan_dist(Point(0, 0), wires[0][j]) <= sDist)
-                sDist = manhattan_dist(Point(0, 0), wires[0][j]);
+        for (int j = 0; j < wires[1].size(); ++j)
+        {
+            Point *intersection = wires[0][i].getIntersection(wires[1][j]);
+            if (intersection != NULL)
+            {
+                int dist = manhattan_dist(Point(0, 0), *intersection);
+                if (dist < sDist)
+                    sDist = dist;
+            }
+        }
 
     cout << sDist << endl;
+    return 0;
 }
