@@ -25,16 +25,27 @@ void possiblePasswords(vector<int>& passwords, int lb, int up) {
         // Going from left to right, the digits never decrease;
         // they only ever increase or stay the same (like 111123 or 135679)
         bool eqDigits = false;
+        bool bigGroup = false;
         bool increase = false;
         for (int j = 0; j < digits.size() - 1; ++j) {
-            if (digits[j] == digits[j+1])
-                eqDigits = true;
+            if (digits[j] == digits[j+1]) {
+                // the two adjacent matching digits are not part of a
+                // larger group of matching digits.
+                if (j > 1 && digits[j] == digits[j-1])
+                    continue;
+                else if (j < digits.size() - 2 && digits[j+1] == digits[j+2])
+                    continue;
+                else
+                    eqDigits = true;
+            }
             else if (digits[j] > digits[j+1])
                 increase = true;
         }
 
-        if (eqDigits && !increase)
+        if (eqDigits && !increase) {
+            cout << i << endl;
             passwords.push_back(i);
+        }
     }
 }
 
